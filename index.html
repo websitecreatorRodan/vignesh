@@ -1,6 +1,6 @@
 <html>
   <title>VIGNESH</title>
-  <body>
+  <body class="antialiased min-h-screen bg-gradient-to-br from-purple-300 via-pink-300 to-yellow-200 flex flex-col items-center justify-center p-4">
     <center id="vigu">
             
            
@@ -17,6 +17,7 @@
   font-weight: <weight>;
   font-style: normal;
 }
+    
       </style>
     <h1>father name</h1>
       <h4>varaprasad</h4>
@@ -24,6 +25,193 @@
       <h4>vasavi</h4>
       <h1>children</h1>
       <h4>vignesh,kruthi</h4>
+<div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 hover:scale-[1.01] border-4 border-white">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-8">
+            ✨ AI Image Generator ✨
+        </h1>
+
+        <div class="mb-6">
+            <label for="prompt-input" class="block text-gray-700 text-lg font-medium mb-2">
+                Enter your creative prompt:
+            </label>
+            <textarea
+                id="prompt-input"
+                class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-gray-800 resize-y min-h-[100px]"
+                placeholder="e.g., A futuristic city at sunset with flying cars, highly detailed, cyberpunk style"
+                rows="4"
+            ></textarea>
+        </div>
+
+        <button
+            id="generate-button"
+            class="w-full py-3 px-6 rounded-xl text-lg font-semibold transition duration-300 ease-in-out
+                   bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg transform hover:scale-105"
+        >
+            Generate Image
+        </button>
+
+        <div id="display-area" class="mt-8 text-center">
+            <p class="text-gray-500 text-lg mt-4">
+                Your generated image will appear here.
+            </p>
+        </div>
+    </div>
+
+    <footer class="mt-8 text-center text-gray-700 text-sm">
+        <p>&copy; 2025 AI Image Generator. Created by Vignesh.</p>
+    </footer>
+
+    <script>
+        // Get references to DOM elements
+        const promptInput = document.getElementById('prompt-input');
+        const generateButton = document.getElementById('generate-button');
+        const displayArea = document.getElementById('display-area');
+
+        /**
+         * Displays a message in the display area.
+         * @param {string} message - The message to display.
+         * @param {string} type - The type of message ('info', 'error').
+         */
+        const showMessage = (message, type = 'info') => {
+            let bgColor, textColor, borderColor;
+            if (type === 'error') {
+                bgColor = 'bg-red-100';
+                textColor = 'text-red-600';
+                borderColor = 'border-red-300';
+            } else {
+                bgColor = 'bg-gray-100';
+                textColor = 'text-gray-500';
+                borderColor = 'border-gray-300';
+            }
+            displayArea.innerHTML = `
+                <p class="${textColor} text-lg mb-4 p-3 ${bgColor} rounded-lg border ${borderColor}">
+                    ${message}
+                </p>
+            `;
+        };
+
+        /**
+         * Shows a loading spinner in the button.
+         */
+        const showLoading = () => {
+            generateButton.disabled = true;
+            generateButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+            generateButton.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'hover:from-purple-700', 'hover:to-pink-700', 'shadow-lg', 'transform', 'hover:scale-105');
+            generateButton.innerHTML = `
+                <span class="flex items-center justify-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                </span>
+            `;
+            displayArea.innerHTML = ''; // Clear previous content
+        };
+
+        /**
+         * Resets the button state after loading.
+         */
+        const resetLoading = () => {
+            generateButton.disabled = false;
+            generateButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            generateButton.classList.add('bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'hover:from-purple-700', 'hover:to-pink-700', 'shadow-lg', 'transform', 'hover:scale-105');
+            generateButton.innerHTML = 'Generate Image';
+        };
+
+        /**
+         * Handles the image generation process.
+         * It sends the prompt to the image generation API and updates the UI with the result.
+         */
+        const generateImage = async () => {
+            const prompt = promptInput.value.trim();
+
+            if (!prompt) {
+                showMessage('Please enter a prompt to generate an image.', 'error');
+                return;
+            }
+
+            showLoading(); // Show loading indicator
+
+            try {
+                // Construct the payload for the image generation API
+                const payload = {
+                    instances: { prompt: prompt },
+                    parameters: { "sampleCount": 1 } // Request one image
+                };
+
+                // API key is left empty; Canvas environment will inject it at runtime
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+
+                // Make the API call to generate the image
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Check if the response was successful
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API error: ${errorData.error.message || response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                // Process the API response
+                if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                    // Construct the image URL from the base64 encoded data
+                    const generatedImageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+
+                    // Create and display the image element
+                    displayArea.innerHTML = `
+                        <div class="relative w-full aspect-square bg-gray-200 rounded-2xl overflow-hidden shadow-xl border-4 border-white">
+                            <img
+                                src="${generatedImageUrl}"
+                                alt="Generated by AI"
+                                class="w-full h-full object-contain rounded-xl"
+                                onerror="this.onerror=null;this.src='https://placehold.co/600x400/FF0000/FFFFFF?text=Image+Load+Error'; document.getElementById('error-message').innerText = 'Failed to load generated image. Please try again.';"
+                            />
+                            <p class="absolute bottom-2 left-0 right-0 text-white text-sm bg-black bg-opacity-50 py-1 px-3 rounded-b-xl">
+                                Image generated by AI
+                            </p>
+                        </div>
+                        <p id="error-message" class="text-red-600 text-lg mt-4"></p>
+                    `;
+                } else {
+                    showMessage('No image data received. Please try a different prompt.', 'error');
+                }
+            } catch (err) {
+                console.error("Error generating image:", err);
+                showMessage(`Failed to generate image: ${err.message}`, 'error');
+            } finally {
+                resetLoading(); // Reset loading indicator
+            }
+        };
+
+        // Add event listener to the generate button
+        generateButton.addEventListener('click', generateImage);
+
+        // Add input event listener to promptInput to enable/disable button
+        promptInput.addEventListener('input', () => {
+            if (promptInput.value.trim() && !generateButton.disabled) {
+                generateButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                generateButton.classList.add('bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'hover:from-purple-700', 'hover:to-pink-700', 'shadow-lg', 'transform', 'hover:scale-105');
+            } else if (!promptInput.value.trim() && !generateButton.disabled) {
+                generateButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                generateButton.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'hover:from-purple-700', 'hover:to-pink-700', 'shadow-lg', 'transform', 'hover:scale-105');
+            }
+        });
+
+        // Initial state of the button (disabled if prompt is empty)
+        if (!promptInput.value.trim()) {
+            generateButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+            generateButton.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'hover:from-purple-700', 'hover:to-pink-700', 'shadow-lg', 'transform', 'hover:scale-105');
+        }
+
+    </script>
+      
     </center>
   </body>
 </html>
